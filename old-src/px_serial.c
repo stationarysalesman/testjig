@@ -17,7 +17,7 @@
 #include "dp_sparse/sparse_null2.h"         // Null2 score correction
 #include "dp_sparse/sparse_aec_align.h"     // anchor/envelope constrained alignment
 */
-#include "hmmer/src/dp_sparse/p7_engine.h"  // FIXME: we'll move the engine somewhere else, I think
+#include "p7_engine.h"  // FIXME: we'll move the engine somewhere else, I think
 
 #include "easel.h"
 #include "esl_random.h"
@@ -26,7 +26,7 @@
 #include "easel.h"
 #include "esl_dsqdata.h"
 
-#include "hmmer/src/hmmer.h"
+#include "hmmer.h"
 //added
 #include <time.h>
 

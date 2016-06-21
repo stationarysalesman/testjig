@@ -1,56 +1,47 @@
 EXECUTABLE = testlib
 
-HDRS = p7_bg.h\
-	p7_oprofile.h\
-	p7_profile.h\
-	p7_hmm.h\
-	p7_trace.h\
-	p7_anchors.h\
-	p7_hmmfile.h\
-	p7_mpas.h\
-	p7_sparsemx.h\
-	p7_checkptmx.h\
-	p7_anchorhash.h\
-	p7_envelopes.h\
-	p7_filtermx.h\
-	p7_engine.h\
-	simdvec.h\
-	modelconfig.h\
-	modelsample.h\
-	modelstats.h\
-	emit.h\
-	evalues.h\
-	general.h\
-	logsum.h
+HDRS = \
+	hmmer/src/base/p7_bg.h\
+	hmmer/src/base/p7_profile.h\
+	hmmer/src/base/p7_hmm.h\
+	hmmer/src/base/p7_trace.h\
+	hmmer/src/base/p7_anchors.h\
+	hmmer/src/base/p7_hmmfile.h\
+	hmmer/src/base/p7_anchorhash.h\
+	hmmer/src/base/p7_envelopes.h\
+	hmmer/src/base/general.h\
+	hmmer/src/dp_sparse/p7_sparsemx.h\
+	hmmer/src/dp_sparse/p7_engine.h\
+	hmmer/src/dp_sparse/sparse_viterbi.h\
+	hmmer/src/dp_sparse/sparse_fwdback.h\
+	hmmer/src/dp_sparse/sparse_decoding.h\
+	hmmer/src/dp_sparse/sparse_anchors.h\
+	hmmer/src/dp_sparse/sparse_asc_fwdback.h\
+	hmmer/src/dp_sparse/sparse_envelopes.h\
+	hmmer/src/dp_sparse/sparse_trace.h\
+	hmmer/src/dp_sparse/sparse_null2.h\
+	hmmer/src/dp_sparse/sparse_aec_align.h\
+	hmmer/src/dp_sparse/p7_spascmx.h\
+	hmmer/src/dp_vector/p7_checkptmx.h\
+	hmmer/src/dp_vector/p7_oprofile.h\
+	hmmer/src/dp_vector/p7_filtermx.h\
+	hmmer/src/dp_vector/simdvec.h\
+	hmmer/src/search/modelconfig.h\
+	hmmer/src/search/p7_mpas.h\
+	hmmer/src/build/modelsample.h\
+	hmmer/src/build/modelstats.h\
+	hmmer/src/build/evalues.h\
+	hmmer/src/misc/emit.h\
+	hmmer/src/misc/logsum.h
 
-OBJS = p7_bg.o\
-	p7_oprofile.o\
-	p7_profile.o\
-	p7_hmm.o\
-	p7_trace.o\
-	p7_anchors.o\
-	p7_sparsemx.o\
-	p7_checkptmx.o\
-	p7_anchorhash.o\
-	p7_envelopes.o\
-	p7_filtermx.o\
-	p7_engine.o\
-	p7_hmmfile.o\
-	p7_mpas.o\
-	simdvec.o\
-	evalues.o\
-	modelconfig.o\
-	modelsample.o\
-	modelstats.o\
-	emit.o\
-	general.o\
-	logsum.o
- 
+OBJS = ${HDRS:.h=.o}
+
 CC     = gcc
 CFLAGS = -O3 -g -mfpu=neon
 ESLDIR = easel
 AR = /usr/bin/ar
-MYLIBDIRS = -L./${ESLDIR} -I./${ESLDIR} 
+MYLIBDIRS = -L./${ESLDIR}
+MYSOURCEDIRS= -I./${ESLDIR} -I./hmmer/src/
 RANLIB = ranlib
 myexe: ${OBJS}
 	${CC} ${CFLAGS} -o $@ ${OBJS} -lm -leasel  
@@ -63,12 +54,12 @@ myexe: ${OBJS}
 
 .FORCE:
 
-${OBJS}: ${HDRS} p7_config.h
+${OBJS}: ${HDRS} hmmer/src/p7_config.h
 
 #libtest: ${OBJS}
 #	${CC} ${CFLAGS} -o libtest -lm -leasel ${OBJS}
 .c.o:
-	${CC} -c ${CFLAGS} ${MYLIBDIRS} -o $@ $< -lm -leasel 
+	${CC} -c ${CFLAGS} ${MYLIBDIRS} ${MYSOURCEDIRS} -o $@ $< -lm -leasel 
 
 libtest.a: ${OBJS}
 	${AR} -r libtest.a ${OBJS} 
@@ -81,7 +72,7 @@ px: px.c
 	${CC} ${CFLAGS} -o px px.c ${MYLIBDIRS} -ltest -leasel -lm -lpthread
 
 px_serial: px_serial.c
-	${CC} ${CFLAGS} -o px_serial px_serial.c ${MYLIBDIRS} -ltest -leasel -lm -lpthread
+	${CC} ${CFLAGS} -o px_serial px_serial.c ${MYLIBDIRS} ${MYSOURCEDIRS} -ltest -leasel -lm -lpthread
 
 #px_serial:  px_serial.c
 #	${CC} ${CFLAGS} -o px_serial -L ${HOME}/Documents/research/hmmer-port/code/hmmer/src -L ${HOME}/Documents/research/hmmer-port/code/easel -I ${HOME}/Documents/research/hmmer-port/code/hmmer/src -I ${HOME}/Documents/research/hmmer-port/code/easel px_serial.c -leasel -lm -lpthread
