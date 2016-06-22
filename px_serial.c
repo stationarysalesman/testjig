@@ -50,7 +50,7 @@ static ESL_OPTIONS options[] = {
 };
 static char usage[]  = "[-options] <hmmfile> <seqfile>";
 static char banner[] = "px, the first parallel tests of H4";
-/*
+
 int
 p7_engine_Overthruster_timing(P7_ENGINE *eng, ESL_DSQ *dsq, int L, P7_OPROFILE *om, P7_BG *bg)
 {
@@ -76,16 +76,16 @@ uint64_t filter_start_time, filter_end_time;
 
   if ((status = p7_bg_NullOne(bg, dsq, L, &(eng->nullsc))) != eslOK) return status; 
   
-  filter_start_time = __rdtsc();
-  /*  First level: SSV and MSV filters 
+  filter_start_time = time(NULL);
+  /*  First level: SSV and MSV filters */ 
   MSV_calls++;
-//  status = p7_MSVFilter(dsq, L, om, eng->fx, &(eng->mfsc));
+  status = p7_MSVFilter(dsq, L, om, eng->fx, &(eng->mfsc));
   if (status != eslOK && status != eslERANGE) return status;
 
   seq_score = (eng->mfsc - eng->nullsc) / eslCONST_LOG2;          
   P = esl_gumbel_surv(seq_score,  om->evparam[p7_MMU],  om->evparam[p7_MLAMBDA]);
 
-  filter_end_time = __rdtsc();
+  filter_end_time = time(NULL);
   MSV_time += (filter_end_time - filter_start_time);
   
   if (P > eng->F1) return eslFAIL;
@@ -147,9 +147,10 @@ uint64_t filter_start_time, filter_end_time;
 //  p7_BackwardFilter(dsq, L, om, eng->cx, eng->sm, sparsify_thresh);
   filter_end_time = __rdtsc();
   Backward_time += (filter_end_time - filter_start_time);  
+*/
   return eslOK;
 }
-*/
+
 
 
 int
@@ -227,7 +228,7 @@ main(int argc, char **argv)
       for (i = 0; i < chu->N; i++)
 	{
 	  chunks++;
-/*
+
 	  p7_bg_SetLength(bg, (int) chu->L[i]);            // TODO: remove need for cast
 	  p7_oprofile_ReconfigLength(om, (int) chu->L[i]); //         (ditto)
 	  
@@ -238,14 +239,15 @@ main(int argc, char **argv)
 	    p7_engine_Reuse(eng);
 	    continue;
 	  }
+
     Main_calls++;
-    uint64_t HMM_start_time = __rdtsc();
+    uint64_t HMM_start_time = time(NULL);
 	  p7_profile_SetLength(gm, (int) chu->L[i]);
-	  status = p7_engine_Main(eng, chu->dsq[i], (int) chu->L[i], gm); 
-    uint64_t HMM_end_time = __rdtsc();
+//	  status = p7_engine_Main(eng, chu->dsq[i], (int) chu->L[i], gm); 
+    uint64_t HMM_end_time = time(NULL);
     HMM_time += (HMM_end_time- HMM_start_time);
 	  p7_engine_Reuse(eng);
-*/
+
 	}
       esl_dsqdata_Recycle(dd, chu);
     }
@@ -270,6 +272,7 @@ main(int argc, char **argv)
   printf("%lu calls to Main comparison routine\n", Main_calls);
   */
   printf("Total time: %" PRId64 "\n", program_end_time-program_start_time);
+  printf("Main_calls, sequences\n%" PRId64 ", %" PRId64 "\n", Main_calls, seqs);
   exit(0);
 }
 

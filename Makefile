@@ -9,6 +9,7 @@ HDRS = \
 	hmmer/src/base/p7_hmmfile.h\
 	hmmer/src/base/p7_anchorhash.h\
 	hmmer/src/base/p7_envelopes.h\
+	hmmer/src/base/p7_hmmwindow.h\
 	hmmer/src/base/general.h\
 	hmmer/src/dp_sparse/p7_sparsemx.h\
 	hmmer/src/dp_sparse/p7_engine.h\
@@ -26,6 +27,7 @@ HDRS = \
 	hmmer/src/dp_vector/p7_oprofile.h\
 	hmmer/src/dp_vector/p7_filtermx.h\
 	hmmer/src/dp_vector/simdvec.h\
+	hmmer/src/dp_vector/msvfilter.h\
 	hmmer/src/search/modelconfig.h\
 	hmmer/src/search/p7_mpas.h\
 	hmmer/src/build/modelsample.h\
@@ -37,7 +39,7 @@ HDRS = \
 OBJS = ${HDRS:.h=.o}
 
 CC     = gcc
-CFLAGS = -O3 -g -mfpu=neon
+CFLAGS = -O0 -g -mfpu=neon
 ESLDIR = easel
 AR = /usr/bin/ar
 MYLIBDIRS = -L./${ESLDIR}
@@ -72,7 +74,7 @@ px: px.c
 	${CC} ${CFLAGS} -o px px.c ${MYLIBDIRS} -ltest -leasel -lm -lpthread
 
 px_serial: px_serial.c
-	${CC} ${CFLAGS} -o px_serial px_serial.c ${MYLIBDIRS} ${MYSOURCEDIRS} -ltest -leasel -lm -lpthread
+	${CC} ${CFLAGS} ${MYLIBDIRS} ${MYSOURCEDIRS} -o px_serial px_serial.c -ltest -leasel -lm -lpthread
 
 #px_serial:  px_serial.c
 #	${CC} ${CFLAGS} -o px_serial -L ${HOME}/Documents/research/hmmer-port/code/hmmer/src -L ${HOME}/Documents/research/hmmer-port/code/easel -I ${HOME}/Documents/research/hmmer-port/code/hmmer/src -I ${HOME}/Documents/research/hmmer-port/code/easel px_serial.c -leasel -lm -lpthread
