@@ -1,7 +1,7 @@
 #include "p7_config.h"
 
 /* SIMD-vectorized acceleration filters, local only: */
-//#include "dp_vector/msvfilter.h"          // MSV/SSV primary acceleration filter
+#include "dp_vector/msvfilter.h"          // MSV/SSV primary acceleration filter
 //#include "dp_vector/vitfilter.h"          // Viterbi secondary acceleration filter
 //#include "dp_vector/fwdfilter.h"          // Sparsification w/ checkpointed local Forward/Backward
 
@@ -29,6 +29,9 @@
 #include "hmmer/src/hmmer.h"
 //added
 #include <time.h>
+#include <stdio.h>
+#include <errno.h>
+#include <error.h>
 
 uint64_t SSV_time;
 uint64_t MSV_time;
@@ -54,7 +57,7 @@ static char banner[] = "px, the first parallel tests of H4";
 int
 p7_engine_Overthruster_timing(P7_ENGINE *eng, ESL_DSQ *dsq, int L, P7_OPROFILE *om, P7_BG *bg)
 {
-  int   do_biasfilter    = (eng->params ? eng->params->do_biasfilter   : p7_ENGINE_DO_BIASFILTER);
+ int   do_biasfilter    = (eng->params ? eng->params->do_biasfilter   : p7_ENGINE_DO_BIASFILTER);
   float sparsify_thresh  = (eng->params ? eng->params->sparsify_thresh : p7_SPARSIFY_THRESH);
   float seq_score;
   float P;
@@ -91,6 +94,7 @@ uint64_t filter_start_time, filter_end_time;
   if (P > eng->F1) return eslFAIL;
   if (eng->stats) eng->stats->n_past_msv++;
 
+   
   /* Biased composition HMM, ad hoc, acts as a modified null 
   if (do_biasfilter)
     {
@@ -179,26 +183,27 @@ main(int argc, char **argv)
   extern uint64_t Forward_time;
   extern uint64_t Backward_time;
   extern uint64_t HMM_time;
-  extern uint64_t full_MSV_calls;
+//  extern uint64_t full_MSV_calls;
   extern uint64_t MSV_calls;
   extern uint64_t Viterbi_calls;
   extern uint64_t Forward_calls;
   extern uint64_t Backward_calls;
   extern uint64_t Main_calls;
-/*
+
   SSV_time = 0;
   MSV_time = 0;
   Viterbi_time = 0;
   Forward_time = 0;
   Backward_time = 0;
   HMM_time = 0;
-  full_MSV_calls = 0;
+  //full_MSV_calls = 0;
   MSV_calls=0;
   Viterbi_calls=0;
   Forward_calls =0;
   Backward_calls=0;
   Main_calls =0;
-*/
+
+  uint64_t num_main_calls = 0;
   time_t program_start_time = time(NULL);
   /* Read in one HMM */
   if (p7_hmmfile_OpenE(hmmfile, NULL, &hfp, NULL) != eslOK) p7_Fail("Failed to open HMM file %s", hmmfile);
@@ -220,7 +225,9 @@ main(int argc, char **argv)
   else if (status != eslOK)        p7_Fail("Unexpected error in opening dsqdata (code %d)", status);
 
   eng = p7_engine_Create(abc, NULL, NULL, gm->M, 400);
-
+  FILE *fp = fopen("msvoutput.txt", "w");
+  p7_filtermx_SetDumpMode(eng->fx, fp, 1);
+ 
   uint64_t seqs = 0, chunks = 0;
    while (( status = esl_dsqdata_Read(dd, &chu)) == eslOK)  
     {
@@ -233,14 +240,17 @@ main(int argc, char **argv)
 	  p7_oprofile_ReconfigLength(om, (int) chu->L[i]); //         (ditto)
 	  
 	  //printf("seq %d %s\n", chu->i0+i, chu->name[i]);
-
+	  if (chunks >= 10) exit(0);
+	  
 	  status = p7_engine_Overthruster_timing(eng, chu->dsq[i], (int) chu->L[i], om, bg);  
 	  if (status == eslFAIL) { 
 	    p7_engine_Reuse(eng);
-	    continue;
+		p7_filtermx_SetDumpMode(eng->fx, fp, 1);
+		continue;
 	  }
 
     Main_calls++;
+	num_main_calls++;
     uint64_t HMM_start_time = time(NULL);
 	  p7_profile_SetLength(gm, (int) chu->L[i]);
 //	  status = p7_engine_Main(eng, chu->dsq[i], (int) chu->L[i], gm); 
@@ -272,7 +282,8 @@ main(int argc, char **argv)
   printf("%lu calls to Main comparison routine\n", Main_calls);
   */
   printf("Total time: %" PRId64 "\n", program_end_time-program_start_time);
-  printf("Main_calls, sequences\n%" PRId64 ", %" PRId64 "\n", Main_calls, seqs);
+  printf("Main_calls, sequences\n%" PRId64 ", %" PRId64 "\n", num_main_calls, seqs);
+  printf("%llu calls to MSV\n;", MSV_calls);
   exit(0);
 }
 

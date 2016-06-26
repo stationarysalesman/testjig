@@ -11,6 +11,7 @@ HDRS = \
 	hmmer/src/base/p7_envelopes.h\
 	hmmer/src/base/p7_hmmwindow.h\
 	hmmer/src/base/general.h\
+	hmmer/src/dp_reference/p7_refmx.h\
 	hmmer/src/dp_sparse/p7_sparsemx.h\
 	hmmer/src/dp_sparse/p7_engine.h\
 	hmmer/src/dp_sparse/sparse_viterbi.h\
@@ -39,10 +40,10 @@ HDRS = \
 OBJS = ${HDRS:.h=.o}
 
 CC     = gcc
-CFLAGS = -O0 -g -mfpu=neon
+CFLAGS = -O3 -mfpu=neon-vfpv4
 ESLDIR = easel
 AR = /usr/bin/ar
-MYLIBDIRS = -L./${ESLDIR}
+MYLIBDIRS = -L./${ESLDIR} -L./hmmer/src/ -L.
 MYSOURCEDIRS= -I./${ESLDIR} -I./hmmer/src/
 RANLIB = ranlib
 myexe: ${OBJS}
@@ -74,11 +75,11 @@ px: px.c
 	${CC} ${CFLAGS} -o px px.c ${MYLIBDIRS} -ltest -leasel -lm -lpthread
 
 px_serial: px_serial.c
-	${CC} ${CFLAGS} ${MYLIBDIRS} ${MYSOURCEDIRS} -o px_serial px_serial.c -ltest -leasel -lm -lpthread
+	${CC} ${CFLAGS} ${MYSOURCEDIRS} -o px_serial px_serial.c -L. -ltest -leasel -lm -lpthread
 
 #px_serial:  px_serial.c
 #	${CC} ${CFLAGS} -o px_serial -L ${HOME}/Documents/research/hmmer-port/code/hmmer/src -L ${HOME}/Documents/research/hmmer-port/code/easel -I ${HOME}/Documents/research/hmmer-port/code/hmmer/src -I ${HOME}/Documents/research/hmmer-port/code/easel px_serial.c -leasel -lm -lpthread
 
 clean:
-	-rm *.o *~
+	-rm *.o *~ hmmer/src/base/*.o hmmer/src/build/*.o hmmer/src/dp_sparse/*.o hmmer/src/dp_vector/*.o hmmer/src/misc/*.o hmmer/src/search/*.o hmmer/src/dp_reference/*.o
 	-rm px px_serial
